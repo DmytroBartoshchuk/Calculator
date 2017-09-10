@@ -1,22 +1,28 @@
 from tkinter import *
 from tkinter import messagebox
 from tkinter import ttk
+import re
+import math
 
 root = Tk()
-root.title("Calculator")
+root.title('Calculator')
+pattern = r'[^0-9]^√'
 
 
 # basic logic
 def calc(key):
     global memory
     if key == '=':
-        str1 = '-+0123456789.*/'
-        if calc_entry.get()[0] not in str1:
+        entry = "".join(calc_entry.get())
+        if re.match(pattern, entry[0]):
             calc_entry.insert(END, 'First symbol is not digit')
             messagebox.showerror('Error!', 'You entered not digit!')
         # count
         try:
-            result = eval(calc_entry.get())
+            if '√' in calc_entry.get():
+                k = re.search(r'√\d+', entry)
+                entry = entry.replace(k.group(), str(math.sqrt(int(k.group()[1:]))))
+            result = eval(entry)
             calc_entry.insert(END, '=' + str(result))
         except:
             calc_entry.insert(END, 'Error!')
@@ -24,17 +30,6 @@ def calc(key):
         # clean entry
     elif key == 'C':
         calc_entry.delete(0, END)
-    # change +-
-    elif key == '-/+':
-        if '=' in calc_entry.get():
-            calc_entry.delete(0, END)
-            try:
-                if calc_entry.get()[0] == '-':
-                    calc_entry.delete(0)
-                else:
-                    calc_entry.insert(0, '-')
-            except IndexError:
-                pass
     else:
         if '=' in calc_entry.get():
             calc_entry.delete(0, END)
@@ -45,14 +40,14 @@ def calc(key):
 bttn_list = [
     '7', '8', '9', '+', '-',
     '4', '5', '6', '*', '/',
-    '1', '2', '3', '-/*', '=',
-    '0', '.', 'C', '%', 'x^2'
+    '1', '2', '3', '√', '^2',
+    '0', '.', 'C', '%', '='
 ]
 r = 1
 c = 0
 
 for i in bttn_list:
-    rel = ''
+    # rel = ''
     cmd = lambda x=i: calc(x)
     ttk.Button(root, text=i, command=cmd).grid(row=r, column=c)
     c += 1
@@ -60,7 +55,7 @@ for i in bttn_list:
         c = 0
         r += 1
 
-calc_entry = Entry(root, width=40)
+calc_entry = Entry(root, width=55)
 calc_entry.grid(row=0, column=0, columnspan=5)
 
 root.mainloop()
